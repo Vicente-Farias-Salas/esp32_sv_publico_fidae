@@ -1,0 +1,43 @@
+digraph FIDAE {
+  rankdir=LR;
+  bgcolor="#0a0a12";
+  fontname="Segoe UI";
+  node [fontname="Segoe UI", fontsize=10, style=filled];
+  edge [fontname="Segoe UI", fontsize=8];
+
+  // ===== Hardware devices =====
+  subgraph cluster_hardware {
+    label="Hardware";
+    style=filled; color="#1a2a2a";
+    esp_cam    [label="ESP32-CAM\n(ojo)"       shape=box, color="#0066cc", fillcolor="#1a3a5a"];
+    esp_wroom  [label="ESP32-WROOM\n(translate)" shape=box, color="#0066cc", fillcolor="#1a3a5a"];
+    arduino    [label="Arduino Uno\n(músculo)"  shape=box, color="#0066cc", fillcolor="#1a3a5a"];
+    servos     [label="Servos\nPan/Tilt"        shape=hexagon, color="#aa6600", fillcolor="#3a2a1a"];
+  }
+
+  // ===== Cloud / Processing =====
+  subgraph cluster_cloud {
+    label="Vercel + Colab";
+    style=filled; color="#1a2a1a";
+    vercel     [label="api/socket.js\n(Vercel WS relay)" shape=box, color="#00cc66", fillcolor="#1a3a2a"];
+    colab      [label="Google Colab\n(YOLOv8n)"           shape=box, color="#00cc66", fillcolor="#1a3a2a"];
+    dashboard  [label="web/index.html\n(Dashboard)"       shape=box, color="#ffaa00", fillcolor="#3a2a1a"];
+  }
+
+  // ===== Data flows =====
+  esp_cam    ->|"Video raw\n(JPEG 320×240)"| vercel;
+  vercel     ->|"Binary frames"|             colab;
+  colab      ->|"JSON: pan/tilt"|          vercel;
+  vercel     ->|"JSON: pan/tilt"|          esp_wroom;
+  esp_wroom  ->|"I2C (2 bytes)"|           arduino;
+  arduino    ->|"PWM (50Hz)"|              servos;
+  colab      ->|"Video procesado\n(JPEG)"| vercel;
+  vercel     ->|"Video procesado"|        dashboard;
+
+  // ===== Legend =====
+  subgraph cluster_legend {
+    label="Leyenda";
+    style=filled; color="#222";
+    cam_legend     [label="", shape=plaintext, fillcolor=transparent];
+  }
+}
