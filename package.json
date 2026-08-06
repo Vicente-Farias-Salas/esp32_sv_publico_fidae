@@ -1,0 +1,17 @@
+{
+  "name": "fidae-rebirth",
+  "version": "2.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "node api/socket.js",
+    "start": "vercel",
+    "lint": "vercel env ls"
+  },
+  "dependencies": {
+    "ws": "^8.17.1"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

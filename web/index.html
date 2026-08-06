@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FIDAE — Monitor de Tracking</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: #0a0a12;
+      color: #e0e0e0;
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1rem;
+    }
+    h1 {
+      color: #00ffcc;
+      font-size: 1.5rem;
+      text-shadow: 0 0 10px rgba(0,255,204,0.5);
+    }
+    .video-wrap {
+      border: 2px solid #222;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 0 30px rgba(0,255,204,0.2);
+    }
+    #monitor {
+      display: block;
+      max-width: 100%;
+      background: #000;
+    }
+    .telemetry {
+      display: flex;
+      gap: 2rem;
+      font-family: 'Fira Code', monospace;
+      font-size: 0.85rem;
+    }
+    .telemetry span { color: #ffaa00; }
+    .telemetry strong { color: #00ffcc; }
+    .status {
+      padding: 0.4rem 1rem;
+      border-radius: 4px;
+      font-size: 0.85rem;
+      font-weight: bold;
+    }
+    .status.connected { color: #00ffcc; border-color: #00ffcc; }
+    .status.disconnected { color: #ff4444; border-color: #ff4444; }
+    .status.connecting { color: #ffaa00; border-color: #ffaa00; }
+    .coords { font-variant-numeric: tabular-nums; }
+  </style>
+</head>
+<body>
+  <h1>🛰️ FIDAE — Monitor de Tracking Espacial</h1>
+
+  <div class="video-wrap">
+    <img id="monitor" width="640" height="480" alt="Esperando video..." />
+  </div>
+
+  <div class="telemetry">
+    <span>Pan:</span> <strong id="pan" class="coords">—</strong>
+    <span>Tilt:</span> <strong id="tilt" class="coords">—</strong>
+    <span>FPS:</span> <strong id="fps" class="coords">—</strong>
+  </div>
+
+  <div id="estado" class="status connecting">Conectando al servidor...</div>
+
+  <script>
+    const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+    const wsUrl = protocol + '//' + window.location.host + '/api/socket?type=viewer';
+    const img = document.getElementById('monitor');
+    const estado = document.getElementById('estado');
+    const panEl = document.getElementById('pan');
+    const tiltEl = document.getElementById('tilt');
+    const fpsEl = document.getElementById('fps');
+
+    let frameCount = 0, lastFpsTime = 0, currentFps = 0;
+
+    function updateStatus(cls, msg) {
+      estado.className = 'status ' + cls;
+      estado.textContent = msg;
+    }
+
+    function connect() {
+      updateStatus('connecting', 'Conectando...');
+      const ws = new WebSocket(wsUrl);
+
+      ws.onopen = () => {
+        updateStatus('connected', 'Conectado. Esperando análisis de YOLO...');
+      };
+
+      ws.onmessage = (event) => {
+        if (event.data instanceof Blob) {
+          frameCount++;
+          const now = performance.now();
+          if (now - lastFpsTime >= 1000) {
+            currentFps = frameCount;
+            frameCount = 0;
+            lastFpsTime = now;
+            fpsEl.textContent = currentFps;
+          }
+          const url = URL.createObjectURL(event.data);
+          img.src = url;
+        } else {
+          // Texto: telemetría (JSON con pan/tilt)
+          try {
+            const data = JSON.parse(event.data);
+            if (data.pan !== undefined) panEl.textContent = data.pan;
+            if (data.tilt !== undefined) tiltEl.textContent = data.tilt;
+          } catch { /* no es JSON, ignorar */ }
+        }
+      };
+
+      ws.onclose = () => {
+        updateStatus('disconnected', 'Desconectado. Reconectando en 3s...');
+        setTimeout(connect, 3000);
+      };
+
+      ws.onerror = (e) => {
+        console.error('WebSocket error:', e);
+        ws.close();
+      };
+    }
+
+    connect();
+  </script>
+</body>
+</html>
