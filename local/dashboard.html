@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FIDAE Local — Monitor</title>
+<style>
+  body { margin:0; padding:0; background:#0a0a12; color:#e0e0e0; font-family:'Segoe UI',system-ui,sans-serif; display:flex; flex-direction:column; align-items:center; gap:1rem; min-height:100vh; }
+  h1 { color:#00ffcc; text-shadow:0 0 10px rgba(0,255,204,.3); }
+  #monitor { max-width:100%; border:2px solid #222; border-radius:8px; box-shadow:0 0 30px rgba(0,255,204,.2); }
+  .status { padding:.4rem 1rem; border-radius:4px; font-weight:bold; font-size:.85rem; }
+  .connected { color:#00ffcc; border:1px solid #00ffcc; }
+  .disconnected { color:#ff4444; border:1px solid #ff4444; }
+  .connecting { color:#ffaa00; border:1px solid #ffaa00; }
+  .telemetry { display:flex; gap:2rem; font-family:'Fira Code',monospace; font-size:.85rem; }
+</style>
+</head>
+<body>
+  <h1>🛰️ FIDAE Monitor (Local)</h1>
+  <img id="monitor" width="640" height="480" alt="Esperando video..." />
+  <div class="telemetry">
+    <span>Pan: <strong id="pan">—</strong></span>
+    <span>Tilt: <strong id="tilt">—</strong></span>
+    <span>FPS: <strong id="fps">—</strong></span>
+  </div>
+  <div id="estado" class="status connecting">Conectando...</div>
+
+  <script>
+    const wsUrl = (window.location.protocol === 'https:' ? 'wss:' : 'ws:') + '//' + window.location.host + '/socket?type=viewer';
+    const img = document.getElementById('monitor');
+    const estado = document.getElementById('estado');
+    const panEl = document.getElementById('pan');
+    const tiltEl = document.getElementById('tilt');
+    const fpsEl = document.getElementById('fps');
+
+    let frames = 0, lastT = 0, fps = 0;
+
+    function setStatus(cls, msg) {
+      estado.className = 'status ' + cls;
+      estado.textContent = msg;
+    }
+
+    function connect() {
+      setStatus('connecting', 'Conectando...');
+      const ws = new WebSocket(wsUrl);
+
+      ws.onopen = () => setStatus('connected', 'Conectado. Esperando video...');
+
+      ws.onmessage = (e) => {
+        if (e.data instanceof Blob) {
+          frames++;
+          const now = performance.now();
+          if (now - lastT >= 1000) { fps = frames; frames = 0; lastT = now; fpsEl.textContent = fps; }
+          img.src = URL.createObjectURL(e.data);
+        } else {
+          try { const d = JSON.parse(e.data); if (d.pan != null) panEl.textContent = d.pan; if (d.tilt != null) tiltEl.textContent = d.tilt; } catch {}
+        }
+      };
+
+      ws.onclose = () => {
+        setStatus('disconnected', 'Desconectado. Reconectando en 3s...');
+        setTimeout(connect, 3000);
+      };
+
+      ws.onerror = () => ws.close();
+    }
+    connect();
+  </script>
+</body>
+</html>

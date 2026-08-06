@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Setup — Arduino Uno (Músculo)</title>
+<style>
+  body { margin:0; padding:0; background:#0a0a12; color:#e0e0e0; font-family:'Segoe UI',system-ui,sans-serif; line-height:1.6; }
+  .container { max-width:720px; margin:0 auto; padding:1.5rem; }
+  h1 { color:#00ffcc; border-bottom:2px solid #00ffcc; padding-bottom:.5rem; }
+  h2 { color:#ffaa00; margin-top:1.5rem; }
+  code { background:#1a1a22; padding:.15rem .4rem; border-radius:3px; color:#00ffcc; font-size:.9em; }
+  pre { background:#111; border:1px solid #333; border-radius:6px; padding:1rem; overflow-x:auto; color:#ccc; font-size:.85em; }
+  .step { background:#1a1a2a; border-left:3px solid #00ffcc; padding:.5rem 1rem; margin:1rem 0; border-radius:4px; }
+  .critical { background:#2a1a1a; border-left:3px solid #ff4444; }
+  .tip { background:#1a2a1a; border-left:3px solid #00ffaa; }
+  table { width:100%; border-collapse:collapse; margin:1rem 0; }
+  th, td { padding:.4rem; border:1px solid #333; text-align:left; font-size:.85rem; }
+  th { background:#1a1a2a; color:#00ffcc; }
+</style>
+</head>
+<body>
+<div class="container">
+
+<h1>🏋️ Arduino Uno Setup (Músculo)</h1>
+<p class="step">Recibe coordenadas por I2C del ESP32-WROOM y controla two servos Pan/Tilt (non-blocking, sin delay).</p>
+
+<h2>📋 Requisitos</h2>
+<table>
+  <tr><th>Hardware</th><td>Arduino Uno (o compatible)</td></tr>
+  <tr><th>Servos</th><td>2× SG90 (Pan: pin 9, Tilt: pin 10)</td></tr>
+  <tr><th>I2C</th><td>SDA → A4, SCL → A5</td></tr>
+  <tr><th>Fuente</th><td>5V externa recomendada (los servos pueden resetear el Arduino)</td></tr>
+</table>
+
+<h2>🔌 Wiring</h2>
+<pre><code>Servo Pan  → Arduino pin 9  (PWM)
+Servo Tilt → Arduino pin 10 (PWM)
+SDA       → A4
+SCL       → A5
+I2C addr  → 0x08 (definido en shared/config.h)
+
+Fuente externa 5V:
+  Servo rojo    → 5V fuente
+  Servo negro   → GND fuente + GND Arduino (común)
+  Servo blanco/amarillo → pin 9 o 10</code></pre>
+
+<h2>📤 Subir firmware</h2>
+<pre><code>Arduino IDE → Board: "Arduino Uno"
+→ Abrir devices/arduino_musculo/m_sculo_arduino_uno.cpp
+→ Seleccionar puerto y subir
+
+# O requiere shared/config.h en el mismo directorio</code></pre>
+
+<h2>💡 Cómo funciona</h2>
+<p>El Arduino es <b>I2C Slave</b> (addr 0x08):</p>
+<ol>
+  <li>Recibe 2 bytes: <code>targetX</code>, <code>targetY</code></li>
+  <li>ISR <code>receiveEvent()</code> los valida (bounds [0-180])</li>
+  <li><code>loop()</code> usa <code>millis()</code> — <b>NO delay()</b> — para mover 1° cada 15ms</li>
+  <li>Los servos se mueven mientras el Arduino sigue escuchando I2C</li>
+</ol>
+
+<h2>⚠️ Troubleshooting</h2>
+<div class="critical">
+  <b>Servos no se mueven:</b> Verifica I2C con pull-ups 4.7kΩ. Usa <code>config.h</code> en el mismo directorio.
+</div>
+<div class="critical">
+  <b>Arduino se reinicia:</b> Los servos consumen corriente. Usa fuente externa 5V separada.
+</div>
+<div class="tip">
+  Serial a 9600 baudios. Mensaje: "Musculo OK" en boot.
+</div>
+
+</div>
+</body>
+</html>

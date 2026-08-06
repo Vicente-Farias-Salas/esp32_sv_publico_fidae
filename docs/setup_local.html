@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Setup — Local (sin Vercel)</title>
+<style>
+  body { margin:0; padding:0; background:#0a0a12; color:#e0e0e0; font-family:'Segoe UI',system-ui,sans-serif; line-height:1.6; }
+  .container { max-width:720px; margin:0 auto; padding:1.5rem; }
+  h1 { color:#00ffcc; border-bottom:2px solid #00ffcc; padding-bottom:.5rem; }
+  h2 { color:#ffaa00; margin-top:1.5rem; }
+  code { background:#1a1a22; padding:.15rem .4rem; border-radius:3px; color:#00ffcc; font-size:.9em; }
+  pre { background:#111; border:1px solid #333; border-radius:6px; padding:1rem; overflow-x:auto; color:#ccc; font-size:.85em; }
+  .step { background:#1a1a2a; border-left:3px solid #00ffcc; padding:.5rem 1rem; margin:1rem 0; border-radius:4px; }
+  .critical { background:#2a1a1a; border-left:3px solid #ff4444; }
+  .tip { background:#1a2a1a; border-left:3px solid #00ffaa; }
+  table { width:100%; border-collapse:collapse; margin:1rem 0; }
+  th, td { padding:.4rem; border:1px solid #333; text-align:left; font-size:.85rem; }
+  th { background:#1a1a2a; color:#00ffcc; }
+</style>
+</head>
+<body>
+<div class="container">
+
+<h1>🏠 Setup — Local (sin Vercel ni Render)</h1>
+<p class="step">Ejecuta todo el sistema en tu red local. El WebSocket server corre en tu PC
+   y los ESP32 se conectan por IP local.</p>
+
+<h2>📁 Estructura local/</h2>
+<pre><code>local/
+├── server.js        # WebSocket relay + HTTP server (Node.js)
+├── dashboard.html   # Dashboard web
+├── cerebro_local.py # YOLO brain (Python, CPU/GPU local)
+├── esp32_config.h   # Config con IP local
+├── package.json     # npm dependencies (ws)
+└── README.md        # Instrucciones rápidas</code></pre>
+
+<h2>🚀 1. Iniciar el servidor</h2>
+<pre><code>cd local/
+npm install    # una vez (instala 'ws')
+node server.js # inicia en http://TU_IP_LOCAL:8080
+
+# El server escucha en 0.0.0.0:8080 (accesible desde la red)</code></pre>
+
+<h2>📡 2. Configurar ESP32</h2>
+<pre><code># En local/esp32_config.h:
+#define WS_HOST  "192.168.1.100"  # IP de tu PC en la red local
+#define WS_PORT  8080
+#define WS_PATH  "/socket"
+
+# Cargar este config.h en cada ESP32:
+cp local/esp32_config.h devices/esp32_cam/config.h
+cp local/esp32_config.h devices/esp32_wroom/config.h</code></pre>
+
+<h2>🖥️ 3. Dashboard</h2>
+<p>Abre en tu navegador:</p>
+<pre><code>http://TU_IP_LOCAL:8080/</code></pre>
+
+<h2>🧠 4. Cerebro (YOLO local)</h2>
+<pre><code># Opción A: Python con GPU local (si tienes CUDA)
+pip install ultralytics opencv-python websockets numpy
+python local/cerebro_local.py
+
+# Opción B: Colab conectando a tu IP local (requiere ngrok)
+# En Colab: !pip install pyngrok
+#           !ngrok http 8080
+#           Cambiar WS_URL al forwarding URL de ngrok</code></pre>
+
+<h2>🔌 Arquitectura local</h2>
+<pre><code class="flow">ESP32-CAM ──ws://192.168.1.100:8080/socket?type=camera──┐
+                                                       │
+ESP32-WROOM──ws://192.168.1.100:8080/socket?type=translator──┤
+Colab/PC ────ws://192.168.1.100:8080/socket?type=colab───────┤
+                                                       ├─→ server.js (Node.js)
+Navegador ────http://192.168.1.100:8080/────────────────────┘
+</code></pre>
+
+<h2>💡 Troubleshooting</h2>
+<div class="critical">
+  <b>"ESP32 no se conecta":</b> Verifica que PC y ESP32 estén en la MISMA red WiFi.
+  Usa <code>ipconfig</code> (Windows) para obtener tu IP local.
+</div>
+<div class="critical">
+  <b>"El cerebro_local.py es lento":</b> Sin GPU, YOLO es ~5-10 FPS. Reduce resolución o skip frames.
+</div>
+<div class="tip">
+  <b>Firewall:</b> Windows Defender puede bloquear el puerto 8080.
+  Añade excepción en "Configuración de firewall → Excepciones → Puertos".
+</div>
+
+</div>
+</body>
+</html>
