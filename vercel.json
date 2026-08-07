@@ -4,16 +4,16 @@
     {
       "src": "api/socket.js",
       "use": "@vercel/node"
+    },
+    {
+      "src": "web/**/*",
+      "use": "@vercel/static"
     }
   ],
   "routes": [
     {
       "src": "/api/socket",
       "dest": "/api/socket.js"
-    },
-    {
-      "src": "/$",
-      "dest": "/web/index.html"
     },
     {
       "src": "/(.*)",
