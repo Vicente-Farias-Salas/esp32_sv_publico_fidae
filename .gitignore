@@ -1,5 +1,8 @@
 # Credentials
 secrets.h
+devices/esp32_cam/secrets.h
+devices/esp32_wroom/secrets.h
+# ^ NO ignorar secrets.h.example (son templates)
 
 # Environment
 .env
@@ -17,3 +20,6 @@ __pycache__/
 # OS
 .DS_Store
 Thumbs.db
+
+# graphify build internals (keep graph.html, graph.json, GRAPH_REPORT.md)
+graphify-out/.graphify_*
