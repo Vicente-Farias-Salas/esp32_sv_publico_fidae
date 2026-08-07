@@ -36,7 +36,7 @@ servos de pan/tilt vía I2C. Todo orquestado por un relay WebSocket en Vercel.
 │   └── secrets.h.example      # Template: credenciales WiFi (NO subir a git)
 ├── vercel.json                # Configuración de routing
 ├── package.json               # Dependencias Node.js (ws)
-├── requirements.txt           # Dependencias Python (YOLO, cv2)
+├── requirements.txt           # → colab/ (solo para Colab, no Vercel)
 └── README.md
 ```
 
@@ -55,7 +55,7 @@ cp devices/esp32_cam/secrets.h devices/esp32_wroom/secrets.h
 Edita `shared/config.h` y cambia `WS_HOST` al hostname de tu despliegue Vercel:
 
 ```c
-#define WS_HOST     "tu-proyecto.vercel.app"
+#define WS_HOST     "esp32-sv-publico-fidae.vercel.app"
 ```
 
 ### 3. Deploy en Vercel

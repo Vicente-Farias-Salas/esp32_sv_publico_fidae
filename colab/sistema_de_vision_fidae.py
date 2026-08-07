@@ -11,7 +11,7 @@ from ultralytics import YOLO
 
 nest_asyncio.apply()
 
-WS_URL = "wss://TU-PROJECTO.vercel.app/api/socket?type=colab"
+WS_URL = "wss://esp32-sv-publico-fidae.vercel.app/api/socket?type=colab"
 CONF = 0.45
 JPEG_QUAL = 75
 

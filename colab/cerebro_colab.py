@@ -12,7 +12,7 @@ from google.colab.patches import cv2_imshow
 
 nest_asyncio.apply()
 
-WS_URL = "wss://TU-PROJECTO.vercel.app/api/socket?type=colab"
+WS_URL = "wss://esp32-sv-publico-fidae.vercel.app/api/socket?type=colab"
 FRAME_W, FRAME_H = 320, 240
 CENTRO_X, CENTRO_Y = FRAME_W // 2, FRAME_H // 2   # FIX: (160, 120) no (320, 240)
 SUAVIDAD = 25.0

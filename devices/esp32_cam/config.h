@@ -1,8 +1,8 @@
 #ifndef FIDAE_CONFIG_H
 #define FIDAE_CONFIG_H
 
-// WebSocket Server (Vercel / local)
-#define WS_HOST  "TU-PROYECTO.vercel.app"  // cambiar en production
+// WebSocket Server (Vercel deployment)
+#define WS_HOST  "esp32-sv-publico-fidae.vercel.app"
 #define WS_PORT  443
 #define WS_PATH  "/api/socket"
 
