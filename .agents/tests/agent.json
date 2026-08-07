@@ -1,0 +1,23 @@
+{
+  "agent": "tests",
+  "description": "Agente de tests para validar deploys de FIDAE en Vercel — verifica HTTP 200, WebSocket handshake, static serving y relay de datos",
+  "commands": {
+    "agent-tests": "node tests/run_tests.js",
+    "agent-tests-ci": "node tests/run_tests.js --ci"
+  },
+  "files": {
+    "test_runner": "tests/run_tests.js",
+    "test_config": "tests/test.config.json",
+    "test_fixtures": "tests/fixtures/"
+  },
+  "triggers": {
+    "post_deploy": true,
+    "pre_push": true,
+    "manual": "Run 'agent-tests' to validate Vercel deployment"
+  },
+  "thresholds": {
+    "http_timeout_ms": 10000,
+    "ws_timeout_ms": 5000,
+    "max_failing": 2
+  }
+}

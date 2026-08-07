@@ -6,12 +6,14 @@
   "scripts": {
     "dev": "node api/socket.js",
     "start": "vercel",
-    "lint": "vercel env ls"
-  },
-  "dependencies": {
-    "ws": "^8.17.1"
+    "lint": "vercel env ls",
+    "test": "node tests/run_tests.js --test",
+    "postdeploy": "node tests/run_tests.js --test"
   },
   "engines": {
     "node": ">=18"
+  },
+  "devDependencies": {
+    "ws": "^8.21.2"
   }
 }

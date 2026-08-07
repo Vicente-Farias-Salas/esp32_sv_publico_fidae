@@ -1,0 +1,15 @@
+{
+  "baseUrl": "https://esp32-sv-publico-fidae.vercel.app",
+  "endpoints": {
+    "dashboard": "/",
+    "websocket": "/api/socket?type=viewer",
+    "staticHtml": "/index.html"
+  },
+  "expected": {
+    "dashboardStatus": 200,
+    "dashboardContains": "FIDAE",
+    "wsSuccess": true,
+    "relayTimeoutMs": 3000
+  },
+  "tests": ["http", "ws", "relay"]
+}
