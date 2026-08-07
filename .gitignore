@@ -23,3 +23,6 @@ Thumbs.db
 
 # graphify build internals (keep graph.html, graph.json, GRAPH_REPORT.md)
 graphify-out/.graphify_*
+
+.vercel
+.env*
